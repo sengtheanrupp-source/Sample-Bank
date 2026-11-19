@@ -37,6 +37,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _token = TextEditingController(text: _settings.token);
     _issuer = TextEditingController(text: _settings.issuerId);
     _demo = _settings.demoMode;
+    if (!_settings.isLoaded) _refillWhenLoaded();
+  }
+
+  /// Screen opened before storage finished loading: swap the defaults for
+  /// the saved values, unless the user has already started typing.
+  Future<void> _refillWhenLoaded() async {
+    final url = _url.text, token = _token.text, issuer = _issuer.text;
+    final demo = _demo;
+    await _settings.ready;
+    if (!mounted) return;
+    if (_url.text != url ||
+        _token.text != token ||
+        _issuer.text != issuer ||
+        _demo != demo) {
+      return;
+    }
+    setState(() {
+      _url.text = _settings.baseUrl;
+      _token.text = _settings.token;
+      _issuer.text = _settings.issuerId;
+      _demo = _settings.demoMode;
+    });
   }
 
   @override

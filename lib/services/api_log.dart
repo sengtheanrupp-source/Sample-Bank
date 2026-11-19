@@ -127,10 +127,14 @@ class ApiLog extends ChangeNotifier {
     try {
       final raw = (await SharedPreferences.getInstance()).getString(_key);
       if (raw == null) return;
-      _entries
-        ..clear()
-        ..addAll((jsonDecode(raw) as List)
-            .map((e) => ApiLogEntry.fromJson(Map<String, dynamic>.from(e))));
+      final saved = (jsonDecode(raw) as List)
+          .map((e) => ApiLogEntry.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
+      // Entries added while we were loading are newer: keep them first.
+      _entries.addAll(saved);
+      if (_entries.length > maxEntries) {
+        _entries.removeRange(maxEntries, _entries.length);
+      }
       notifyListeners();
     } catch (_) {/* corrupt log - start fresh */}
   }

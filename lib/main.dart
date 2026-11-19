@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -8,7 +10,7 @@ import 'services/api_settings.dart';
 import 'services/app_state.dart';
 import 'theme.dart';
 
-Future<void> main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
@@ -17,9 +19,11 @@ Future<void> main() async {
     statusBarBrightness: Brightness.dark,
   ));
   final settings = ApiSettings();
-  await settings.load();
-  await ApiLog.instance.load();
+  // Draw the first frame right away; storage loads run in parallel behind it.
+  // Payments await settings.ready, so nothing uses half-loaded values.
   runApp(RomdoulBankApp(state: AppState(settings)));
+  unawaited(settings.load());
+  unawaited(ApiLog.instance.load());
 }
 
 class RomdoulBankApp extends StatelessWidget {

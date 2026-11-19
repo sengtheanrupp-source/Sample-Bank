@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -27,16 +29,31 @@ class ApiSettings extends ChangeNotifier {
 
   String get confirmUrl => '${_trimSlash(baseUrl)}${AppConfig.confirmPath}';
 
+  final _ready = Completer<void>();
+
+  /// Completes once [load] has finished (successfully or not).
+  Future<void> get ready => _ready.future;
+  bool get isLoaded => _ready.isCompleted;
+
   Future<void> load() async {
+    if (_ready.isCompleted) return;
+    // Start both reads together instead of one after the other.
+    final prefsF = SharedPreferences.getInstance();
+    final tokenF = _secure.read(key: _kToken);
     try {
-      final prefs = await SharedPreferences.getInstance();
+      final prefs = await prefsF;
       baseUrl = prefs.getString(_kBaseUrl) ?? baseUrl;
       issuerId = prefs.getString(_kIssuer) ?? issuerId;
       demoMode = prefs.getBool(_kMock) ?? demoMode;
-      token = await _secure.read(key: _kToken) ?? token;
     } catch (e) {
-      debugPrint('ApiSettings.load failed: $e'); // keep defaults
+      debugPrint('ApiSettings.load prefs failed: $e'); // keep defaults
     }
+    try {
+      token = await tokenF ?? token;
+    } catch (e) {
+      debugPrint('ApiSettings.load token failed: $e'); // keep default
+    }
+    _ready.complete();
     notifyListeners();
   }
 

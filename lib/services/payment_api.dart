@@ -56,6 +56,7 @@ class PaymentApi {
     required String khqrHash,
     String note = '',
   }) async {
+    await settings.ready; // never pay with half-loaded settings
     final payload = <String, dynamic>{
       'khqr_string': qr.raw,
       'currency': currency.code,

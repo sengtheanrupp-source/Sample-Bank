@@ -293,9 +293,13 @@ class _ScanScreenState extends State<ScanScreen>
                 child: const Row(mainAxisSize: MainAxisSize.min, children: [
                   Icon(Icons.verified_rounded, color: RB.gold, size: 18),
                   SizedBox(width: 8),
-                  Text('Pay any KHQR · all Bakong member banks',
-                      style: TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.w600)),
+                  Flexible(
+                    child: Text('Pay any KHQR · all Bakong member banks',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.w600)),
+                  ),
                 ]),
               ),
             ]),
